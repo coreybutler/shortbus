@@ -1,0 +1,30 @@
+{
+  "name": "shortbus",
+  "version": "1.0.0",
+  "description": "Shortbus is a lightweight data processing/ETL module designed to run asynchronous processes in a seemingly synchronous way. The module acts as a mini service bus. The approach helps developers produce more readable data flow code. Code is cleaner, more structured, and provides a means to avoid callback hell.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coreybutler/shortbus.git"
+  },
+  "keywords": [
+    "data",
+    "flow",
+    "etl",
+    "async",
+    "sync",
+    "bus"
+  ],
+  "author": "Corey Butler <corey@coreybutler.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/coreybutler/shortbus/issues"
+  },
+  "homepage": "https://github.com/coreybutler/shortbus"
+}
