@@ -50,11 +50,33 @@ var ShortBus = function(){
       writable: true,
       configurable: false,
       value: null
+    },
+    onTimeout: {
+      enumerable: false,
+      writable: false,
+      configurable: false,
+      value: function(){
+        var log = [];
+        if (me.steps.length>0){
+          me.steps.forEach(function(s){
+            log.push(s.name,s.status===null?'NOT STARTED':s.status);
+          });
+        }
+        me.emit('timeout',{process:log});
+//        throw new Error('Timed out.');
+//        process.exit(1);
+      }
     }
   });
 
   this.on('stepcomplete',function(step){
-    step.status = 'complete';
+
+    // Disallow duplicates
+    if (step.status === 'completed'){
+      return;
+    }
+
+    step._status = 'complete';
 
     // When the step is done, tally it
     me.completed++;
@@ -63,6 +85,9 @@ var ShortBus = function(){
     // If all of the queries have been tallied, we're done.
     if (me.completed === me.steps.length) {
       me.processing = false;
+      Object.keys(me.steps).forEach(function(step){
+        clearTimeout(me.steps[step].timer);
+      });
       me.emit('complete');
     }
   });
@@ -82,18 +107,84 @@ var ShortBus = function(){
       console.error('No processing method defined for step '+(parseInt(this.steps.length)+1)+'.');
       process.exit(1);
     }
+
     var queue = {
-      id: this.steps.length+1,
       name: name,
-      method: fn,
-      status: null
+      method: function(){
+        var self = this,
+            x = {
+              timeout: function(milliseconds){
+                queue.timer = setTimeout(function(){
+                  if (me.processing) {
+                    me.emit('steptimeout',queue);
+                  }
+                }, milliseconds);
+              }
+            };
+        fn.apply(x,arguments);
+      },
+      _status: null
     };
+
+    Object.defineProperties(queue,{
+      id: {
+        enumerable: true,
+        writable: false,
+        configurable: false,
+        value:  (this.steps.length > 0 ? this.steps[this.steps.length-1].id : 0)+1
+      },
+      async: {
+        enumerable: false,
+        writable: false,
+        configurable: false,
+        value: (fn && fn.length > 0)
+      },
+      timer: {
+        enumerable: false,
+        writable: true,
+        configurable: false,
+        value: null
+      },
+      status: {
+        enumerable: false,
+        get: function(){
+          return this._status;
+        }
+      }
+    });
+
     this.steps.push(queue);
     this.emit('addstep',queue);
   };
 
+  // Get a specific step by index
+  this.getAt = function(i){
+    return this.steps[i];
+  };
+
+  // Get a specific step by name or ID
+  this.get = function(step){
+    // Get by Name
+    var el = me.steps.filter(function(s){
+      return s.name === step;
+    });
+    if (el.length === 1){
+      return el[0];
+    }
+    // Get by ID
+    var el = me.steps.filter(function(s){
+      return s.id === step;
+    });
+    if (el.length === 1){
+      return el[0];
+    }
+  };
+
   // Remove a step by name or ID. Seeks in that order
   this.remove = function(step){
+    if (this.processing){
+      return console.warn('Cannot add a step while processing.');
+    }
     // Remove by name
     var el = me.steps.filter(function(s){
       return s.name === step;
@@ -118,6 +209,9 @@ var ShortBus = function(){
 
   // Remove at a specific array index
   this.removeAt = function(step){
+    if (this.processing){
+      return console.warn('Cannot add a step while processing.');
+    }
     // Remove by index
     if (typeof step !== 'number'){
       return console.error('Failed to remove step: '+step);
@@ -130,33 +224,30 @@ var ShortBus = function(){
 
   // Run the queued processes in order
   this.process = function(){
+    if (this.processing){
+      return console.warn('Cannot start processing (already running). Please wait for this process to complete before calling process() again.');
+    }
     me.processing = true;
     if (me.timeout !== null){
-      me.timer = setTimeout(function(){
-        if (me.steps.length>0){
-          me.steps.forEach(function(s){
-            console.log(s.name,s.status===null?'NOT STARTED':s.status);
-          });
-        }
-        throw 'Timed out.';
-        process.exit(1);
-      },me.timeout*1000);
+      me.timer = setTimeout(me.onTimeout,me.timeout);
     }
     for (var i=0; i< this.steps.length; i++){
       me.mode === 'dev' && console.log('\n---------------------------------\nExecuting '+me.steps[i].name+':');
-      me.steps[i].status = 'running';
-      me.steps[i].method(function(){
-        var step = me.steps[i];
-        if (Object.keys(arguments).length === 0){
-          return setTimeout(function(){
-            me.emit('stepcomplete',step);
-          },1);
-        } else {
-          return function(){
-            me.emit('stepcomplete',step);
-          }
-        }
-      }());
+      me.steps[i]._status = 'running';
+
+      var step = me.steps[i];
+
+      if (step.async){
+        var cb = function(){
+          me.emit('stepcomplete',step);
+        };
+      } else {
+        var cb = setTimeout(function(){
+          me.emit('stepcomplete',step);
+        },1);
+      }
+
+      step.method.call(step,cb);
     }
   };
 
