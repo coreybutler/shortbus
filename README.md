@@ -6,6 +6,8 @@ Shortbus is a lightweight flow control module that works like a mini event bus +
 
 Install via `npm install shortbus`.
 
+This module contains minimal dependencies and [helps keep npm fit](https://medium.com/@goldglovecb/npm-needs-a-personal-trainer-537e0f8859c6).
+
 _Use Case:_
 
 > My process should download 3 files, combine them, and save the results to disk.
