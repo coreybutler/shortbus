@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/coreybutler/shortbus/issues"
   },
-  "homepage": "https://github.com/coreybutler/shortbus"
+  "homepage": "https://github.com/coreybutler/shortbus",
+  "devDependencies": {
+    "mocha": "^2.1.0"
+  }
 }
