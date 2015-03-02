@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/coreybutler/shortbus.svg)](https://travis-ci.org/coreybutler/shortbus)
+
 # Shortbus
 
 Shortbus is a lightweight flow control module that works like a mini event bus + serial/parallel processor.
