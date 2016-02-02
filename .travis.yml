@@ -7,5 +7,13 @@ notifications:
     rooms:
       secure: G86agoGJWFpnW+DIwoY0iZjTi4858qgZUnVSFKkz39zfeIFm/lnmcBG3MqLMzvkjFrj+qoofqAUUbycvA8ZE7FbX6+rOfChPpco14LM/cPWrltNuLEYGHA5ikLTrGXOQpy6HFx0MFxhDQc5GFZWoNOVZb8bRogyv1PZwS2AG7tQ=
     template:
-    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}'
+    - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
     format: html
+deploy:
+  provider: npm
+  email: corey@coreybutler.com
+  api_key:
+    secure: IXATJk85IFBw2DHIby3q0MggdHBTcw9ZDomMcN2MVeOaE0/MN3C4gAkdLo5klVLaXdGi2HMVkPKn2C1RNkuGV8wuOhjQQyUvsm3phL1aTvwwVlTAQmtR+yVDRaijUzj6RsbngMw+JraJzSJKUg46cfLRNZj7JT9CM3ns7JH4mbE=
+  on:
+    tags: true
+    repo: coreybutler/shortbus
