@@ -23,26 +23,26 @@ This approach produces more readable, cleaner, and well structured data flow cod
 ### Example Please?
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus();
-var downloads = ['file1.json','file2.json','file3.json'];
+var Shortbus = require('shortbus')
+var tasks = new Shortbus()
+var downloads = ['file1.json','file2.json','file3.json']
 
-downloads.forEach(function(file){
-  tasks.add('Download '+file, function(next){
+downloads.forEach(function (file) {
+  tasks.add('Download '+file, function (next) {
     // ... download the file...
-    next();
-  });
-});
+    next()
+  })
+})
 
-tasks.on('stepcomplete', function(step){
-  console.log('Just completed', step);
-});
+tasks.on('stepcomplete', function (step) {
+  console.log('Just completed', step)
+})
 
-tasks.on('complete', function(){
+tasks.on('complete', function () {
   // ... concatenate the files & save to disk...
-});
+})
 
-tasks.process(); // Begin execution
+tasks.process() // Begin execution
 ```
 
 Each task is executed in parallel, but the files won't be combined until every file is downloaded.
@@ -62,8 +62,8 @@ It supports "development" and "production" modes. The difference between these i
 By default, Shortbus runs in "production" mode, i.e. it will not write to `stdout`. Setting "development" mode can be accomplished in two ways. If the `NODE_ENV` environment variable is present, it's value will be used. Alternatively the mode can be explicitly set when creating the Shortbus instance:
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
 ...
 ```
@@ -75,32 +75,32 @@ Shortbus tasks represent a single task that is performed in parallel to other ta
 **Adding** a task is straightforward:
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
 // Task with a custom name
-tasks.add('First Task', function(){
+tasks.add('First Task', function () {
   ... process something ...
-});
+})
 
 // Auto-named task
-tasks.add(function(){
+tasks.add(function () {
   ... process something else ...
-});
+})
 
 // Use an aysnchronous task (auto-named)
-tasks.add(function(next){
-  setTimeout(function(){
+tasks.add(function (next) {
+  setTimeout(function () {
     ... process something else ...
-    next();
-  }, 2000);
-});
+    next()
+  }, 2000)
+})
 
-tasks.on('complete', function(){
-  console.log('All done!');
-});
+tasks.on('complete', function () {
+  console.log('All done!')
+})
 
-tasks.process();
+tasks.process()
 ```
 
 This example illustrates the three primary syntaxes for adding a task. The first `task.add()` in the example accepts an optional descriptive task name and the required function as arguments of the `add([name], function)` method. The function is assumed to be synchronous.
@@ -108,23 +108,68 @@ This example illustrates the three primary syntaxes for adding a task. The first
 The second `task.add()` only supplies the required function. The function is assumed to be synchronous.
 
 The final `task.add()` only supplied the required function. However, it also uses the `next` attribute. The `setTimeout` function is a contrived example of an async function that may take some more time to execute. By
-using the `next` argument, the method will not be considered "finished" until `next();` is called.
+using the `next` argument, the method will not be considered "finished" until `next()` is called.
+
+**Sequential Processing**
+
+As of v1.0.4, it is possible to process tasks sequentially in a "one
+after the other" fashion. Sequential processing will process a task
+and wait for it to completely finish before starting the next task.
+
+```js
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
+var myArray = []
+
+// Task with a custom name
+tasks.add('First Task', function () {
+  myArray.push(1)
+})
+
+// Use an aysnchronous task (auto-named)
+tasks.add(function (next) {
+  setTimeout(function () {
+    myArray.push(2)
+    next()
+  }, 2000)
+})
+
+// Auto-named task
+tasks.add(function () {
+  myArray.push(3)
+})
+
+tasks.on('complete', function () {
+  console.log(myArray.join(', '))
+})
+
+tasks.process(true) // <-- Setting `true` makes this sequential.
+```
+
+After approximately 2 seconds, the code above writes the following to the console:
+
+```sh
+1, 2, 3
+```
+
+Since tasks are executed sequentially, the second task (asynchronous)
+waits 2 seconds before adding `2` to the array. If sequential processing _was NOT used_, the output would have been `1, 3, 2`.
 
 **Displaying tasks:**
 
 Shortbus maintains a queue of tasks and their status. This is accessible in the `list` attribute:
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
-tasks.timeout = 60*1000; // This will timeout after 1 minute.
+tasks.timeout = 60*1000 // This will timeout after 1 minute.
 
-tasks.add(...);
-tasks.add(...);
-tasks.add(...);
+tasks.add(...)
+tasks.add(...)
+tasks.add(...)
 
-console.log(tasks.list);
+console.log(tasks.list)
 ```
 
 **Removing a task** is also a straightforward process. Keep in mind that a tasks can only be removed before the `tasks.process()` method begins processing, or after they complete. You cannot add or remove tasks during processing.
@@ -132,18 +177,18 @@ console.log(tasks.list);
 There are two ways to remove a task. A task can be removed directory from the task `list` (an array) by index, using the `removeAt()` method:
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
-tasks.timeout = 60*1000; // This will timeout after 1 minute.
+tasks.timeout = 60*1000 // This will timeout after 1 minute.
 
-tasks.add(...);
-tasks.add(...);
-tasks.add(...);
+tasks.add(...)
+tasks.add(...)
+tasks.add(...)
 
-tasks.removeAt(0);
+tasks.removeAt(0)
 
-console.log(tasks.list);
+console.log(tasks.list)
 ```
 
 The code above would create 3 tasks, then remove the first one.
@@ -151,19 +196,19 @@ The code above would create 3 tasks, then remove the first one.
 Tasks can also be removed by their descriptive name or task ID using the `remove()` method. The task ID can be found in the `list`. It is an auto-incrementing number guaranteed to be unique.
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
-tasks.timeout = 60*1000; // This will timeout after 1 minute.
+tasks.timeout = 60*1000 // This will timeout after 1 minute.
 
-tasks.add('My First Task', function(){...}); // ID: 1
-tasks.add(...); // ID: 2
-tasks.add(...); // ID: 3
+tasks.add('My First Task', function () {...}) // ID: 1
+tasks.add(...) // ID: 2
+tasks.add(...) // ID: 3
 
-tasks.remove('My First Task'); // Remove by name
-tasks.remove(3); // Remove by ID
+tasks.remove('My First Task') // Remove by name
+tasks.remove(3) // Remove by ID
 
-console.log(tasks.list);
+console.log(tasks.list)
 ```
 
 In the example above, the first and last tasks would be removed, leaving only the second one for processing.
@@ -176,7 +221,7 @@ Tasks are just an object held in an array. An example might look like:
 {
   id: 1, // Auto-generated ID.
   name: 'Title', // Descriptive title
-  method: function(){...}, // The JS function to run
+  method: function () {...}, // The JS function to run
   status: null // Can be null, running, or complete
 }
 ```
@@ -184,13 +229,13 @@ Tasks are just an object held in an array. An example might look like:
 The `id` an `status` are read-only. The name and method can both be modified. To change a task's function after it has already been created, use the `get` method to retrieve this object:
 
 ```
-var task = tasks.get('My Task'); // get(name or ID)
-task.name = 'New Name';
+var task = tasks.get('My Task') // get(name or ID)
+task.name = 'New Name'
 
 // OR
 
-var task = tasks.getAt(0); // Get by list index (this example is requesting the first item)
-task.name = 'New Name';
+var task = tasks.getAt(0) // Get by list index (this example is requesting the first item)
+task.name = 'New Name'
 
 ```
 
@@ -199,21 +244,21 @@ task.name = 'New Name';
 Shortbus has a process timeout feature that is _disabled_ by default. This feature will monitor the _entire_ process and fire a `timeout` event if the timeout maximum is exceeded. To enable this feature, set the timeout attribute before processing tasks. For example:
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
-tasks.timeout = 60*1000; // This will timeout after 1 minute.
+tasks.timeout = 60*1000 // This will timeout after 1 minute.
 
-tasks.add(...);
-tasks.add(...);
-tasks.add(...);
+tasks.add(...)
+tasks.add(...)
+tasks.add(...)
 
-tasks.on('timeout', function(progress){
-  console.log('Progress at the point of timeout:', log);
-  process.exit(1);
-});
+tasks.on('timeout', function (progress) {
+  console.log('Progress at the point of timeout:', log)
+  process.exit(1)
+})
 
-tasks.process();
+tasks.process()
 ```
 
 **Individual Steps:**
@@ -221,21 +266,20 @@ tasks.process();
 Shortbus tasks also have a timeout feature that is _disabled_ by default. This feature will monitor a _single step_ and fire a `steptimeout` event. To use step-specific timeouts, use the built-in timeout feature:
 
 ```js
-var Shortbus = require('shortbus');
-var tasks = new Shortbus('development');
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
 
-tasks.add(function(){
-  this.timeout(5*1000); // Timeout after 5 seconds
+tasks.add(function () {
+  this.timeout(5*1000) // Timeout after 5 seconds
   ...
-});
-tasks.add(...);
-tasks.add(...);
+})
+tasks.add(...)
+tasks.add(...)
 
-tasks.on('steptimeout', function(step){
-  console.log('Timeout: ', step);
-  process.exit(1);
-});
+tasks.on('steptimeout', function (step) {
+  console.log('Timeout: ', step)
+  process.exit(1)
+})
 
-tasks.process();
+tasks.process()
 ```
-
