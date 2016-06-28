@@ -110,51 +110,6 @@ The second `task.add()` only supplies the required function. The function is ass
 The final `task.add()` only supplied the required function. However, it also uses the `next` attribute. The `setTimeout` function is a contrived example of an async function that may take some more time to execute. By
 using the `next` argument, the method will not be considered "finished" until `next()` is called.
 
-**Sequential Processing**
-
-As of v1.0.4, it is possible to process tasks sequentially in a "one
-after the other" fashion. Sequential processing will process a task
-and wait for it to completely finish before starting the next task.
-
-```js
-var Shortbus = require('shortbus')
-var tasks = new Shortbus('development')
-var myArray = []
-
-// Task with a custom name
-tasks.add('First Task', function () {
-  myArray.push(1)
-})
-
-// Use an aysnchronous task (auto-named)
-tasks.add(function (next) {
-  setTimeout(function () {
-    myArray.push(2)
-    next()
-  }, 2000)
-})
-
-// Auto-named task
-tasks.add(function () {
-  myArray.push(3)
-})
-
-tasks.on('complete', function () {
-  console.log(myArray.join(', '))
-})
-
-tasks.process(true) // <-- Setting `true` makes this sequential.
-```
-
-After approximately 2 seconds, the code above writes the following to the console:
-
-```sh
-1, 2, 3
-```
-
-Since tasks are executed sequentially, the second task (asynchronous)
-waits 2 seconds before adding `2` to the array. If sequential processing _was NOT used_, the output would have been `1, 3, 2`.
-
 **Displaying tasks:**
 
 Shortbus maintains a queue of tasks and their status. This is accessible in the `list` attribute:
@@ -238,6 +193,51 @@ var task = tasks.getAt(0) // Get by list index (this example is requesting the f
 task.name = 'New Name'
 
 ```
+
+**Sequential Processing**
+
+As of v1.0.4, it is possible to process tasks sequentially in a "one
+after the other" fashion. Sequential processing will process a task
+and wait for it to completely finish before starting the next task.
+
+```js
+var Shortbus = require('shortbus')
+var tasks = new Shortbus('development')
+var myArray = []
+
+// Task with a custom name
+tasks.add('First Task', function () {
+  myArray.push(1)
+})
+
+// Use an aysnchronous task (auto-named)
+tasks.add(function (next) {
+  setTimeout(function () {
+    myArray.push(2)
+    next()
+  }, 2000)
+})
+
+// Auto-named task
+tasks.add(function () {
+  myArray.push(3)
+})
+
+tasks.on('complete', function () {
+  console.log(myArray.join(', '))
+})
+
+tasks.process(true) // <-- Setting `true` makes this sequential.
+```
+
+After approximately 2 seconds, the code above writes the following to the console:
+
+```sh
+1, 2, 3
+```
+
+Since tasks are executed sequentially, the second task (asynchronous)
+waits 2 seconds before adding `2` to the array. If sequential processing _was NOT used_, the output would have been `1, 3, 2`.
 
 #### Timeouts
 
