@@ -53,11 +53,23 @@ class ShortBus extends EventEmitter {
         writable: true,
         configurable: false,
         value: null
+      },
+      sequential: {
+        enumerable: false,
+        writable: true,
+        configurable: false,
+        value: false
       }
     })
 
     const me = this
     this.on('stepcomplete', function (step) {
+      // Sequential processing has it's own completion management, so
+      // this process will step aside.
+      if (this.sequential) {
+        return
+      }
+
       // Disallow duplicates
       if (step.status === 'completed') {
         return
@@ -301,13 +313,10 @@ class ShortBus extends EventEmitter {
       }, this.timeout)
     }
 
-    sequential = typeof sequential === 'boolean' ? sequential : false
-    if (!sequential) {
+    this.sequential = typeof sequential === 'boolean' ? sequential : false
+    if (!this.sequential) {
       for (var i = 0; i < this.steps.length; i++) {
-        if (this.mode === 'dev') {
-          console.log('\n---------------------------------\nExecuting ' + this.steps[i].name + ':')
-        }
-        this.steps[i].run()
+        this.steps[i].run(this.mode)
       }
     } else {
       let queue = this.steps
@@ -320,7 +329,7 @@ class ShortBus extends EventEmitter {
           currentStep.on('stepcomplete', function () {
             listener.emit('stepcomplete')
           })
-          currentStep.run()
+          currentStep.run(this.mode)
         } else {
           me.emit('complete')
         }
@@ -330,7 +339,8 @@ class ShortBus extends EventEmitter {
       currentStep.on('stepcomplete', function () {
         listener.emit('stepcomplete')
       })
-      currentStep.run()
+      
+      currentStep.run(this.mode)
     }
   }
 }
