@@ -329,6 +329,9 @@ class ShortBus extends EventEmitter {
           currentStep.on('stepcomplete', function () {
             listener.emit('stepcomplete')
           })
+          currentStep.on('stepstarted', function () {
+            listener.emit('stepstarted')
+          })
           currentStep.run(this.mode)
         } else {
           me.emit('complete')
@@ -339,9 +342,17 @@ class ShortBus extends EventEmitter {
       currentStep.on('stepcomplete', function () {
         listener.emit('stepcomplete')
       })
-      
+      currentStep.on('stepstarted', function () {
+        listener.emit('stepstarted')
+      })
+
       currentStep.run(this.mode)
     }
+  }
+
+  // Alias for process
+  run () {
+    this.process.apply(this, arguments)
   }
 }
 
