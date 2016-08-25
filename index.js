@@ -340,7 +340,7 @@ class ShortBus extends EventEmitter {
         listener.emit('stepcomplete')
       })
       currentStep.on('stepstarted', function () {
-        me.emit('stepstarted')
+        me.emit('stepstarted', currentStep)
       })
 
       currentStep.run(this.mode)
