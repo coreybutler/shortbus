@@ -218,3 +218,17 @@ suite('Sequential Processing', function () {
     tasks.process(true)
   })
 })
+
+suite('Edge Cases', function () {
+  var tasks
+
+  setup(function () {
+    tasks = new ShortBus()
+  })
+
+  test('Process an empty queue.', function (next) {
+    tasks.on('complete', next)
+
+    tasks.run()
+  })
+})

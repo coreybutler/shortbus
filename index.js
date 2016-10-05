@@ -304,6 +304,10 @@ class ShortBus extends EventEmitter {
       return console.warn('Cannot start processing (already running). Please wait for this process to complete before calling process() again.')
     }
 
+    if (this.steps.length === 0) {
+      return this.emit('complete')
+    }
+
     this.processing = true
 
     if (this.timeout !== null) {
