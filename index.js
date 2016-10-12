@@ -187,7 +187,7 @@ class ShortBus extends EventEmitter {
     })
 
     this.steps.push(queue)
-    this.emit('addstep', queue)
+    this.emit('stepadded', queue)
   }
 
   /**
@@ -231,7 +231,7 @@ class ShortBus extends EventEmitter {
    * @method remove
    * Remove a queue item by name or number.
    * @param  {string} requestedStepTitle
-   * The descriptie name of the queue item to retrieve.
+   * The descriptive name of the queue item to retrieve.
    * @return {Queue}
    * Returns the item that was removed.
    */
@@ -250,6 +250,7 @@ class ShortBus extends EventEmitter {
         return step.name !== requestedStep
       })
 
+      this.emit('stepremoved', element[0])
       return element[0]
     }
 
@@ -262,6 +263,8 @@ class ShortBus extends EventEmitter {
       this.steps = this.steps.filter(function (step) {
         return step.number !== requestedStep
       })
+
+      this.emit('stepremoved', element[0])
       return element[0]
     }
   }

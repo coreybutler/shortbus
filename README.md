@@ -283,3 +283,44 @@ tasks.on('steptimeout', function (step) {
 
 tasks.process()
 ```
+
+### Events
+
+ShortBus fires several events that can be used for debugging, logging, or displaying legible progress of a process.
+
+Events are handled by adding a listener:
+
+```js
+var Shortbus = require('shortbus')
+var tasks = new Shortbus()
+
+tasks.add(...)
+tasks.add(...)
+
+tasks.on('steptimeout', function (step) {
+  ...
+})
+```
+
+Each task event receives the queue item (step) object as a callback argument. The step object looks like:
+
+```js
+{
+  name: '{String} name of action',
+  step: '{Number} step number', // useful for seeing the order in which something is triggered
+  status: '{String|Null} May be "running", "complete", or "null" (not run yet)'
+}
+```
+
+#### Event Names
+
+`stepadded` - Fired when a new step is added to the queue.
+`stepremoved` - Fired when a step is removed from the queue.
+`stepstarted` - Fired when a step begins processing.
+`stepcomplete` - Fired when a step is done.
+`steptimeout` - Fired when a step takes too long.
+`steptimeout` - Fired when a step takes too long.
+`complete` - Fired when **all** steps are done.
+`timeout` - Fired when the entire series of events takes too long.
+
+**NOTICE** `complete` and `timeout` are not "step" events and return no arguments in the callback.
