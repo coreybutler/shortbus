@@ -314,13 +314,13 @@ Each task event receives the queue item (step) object as a callback argument. Th
 
 #### Event Names
 
-`stepadded` - Fired when a new step is added to the queue.
-`stepremoved` - Fired when a step is removed from the queue.
-`stepstarted` - Fired when a step begins processing.
-`stepcomplete` - Fired when a step is done.
-`steptimeout` - Fired when a step takes too long.
-`steptimeout` - Fired when a step takes too long.
-`complete` - Fired when **all** steps are done.
-`timeout` - Fired when the entire series of events takes too long.
+- `stepadded`: Fired when a new step is added to the queue.
+- `stepremoved`: Fired when a step is removed from the queue.
+- `stepstarted`: Fired when a step begins processing.
+- `stepcomplete`: Fired when a step is done.
+- `steptimeout`: Fired when a step takes too long.
+- `steptimeout`: Fired when a step takes too long.
+- `complete`: Fired when **all** steps are done.
+- `timeout`: Fired when the entire series of events takes too long.
 
 **NOTICE** `complete` and `timeout` are not "step" events and return no arguments in the callback.
