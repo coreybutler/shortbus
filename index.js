@@ -42,6 +42,12 @@ class ShortBus extends EventEmitter {
         configurable: false,
         value: arguments[0] || process.env.NODE_ENV || 'production'
       },
+      _cancel: {
+        enumerable: false,
+        writable: true,
+        configurable: false,
+        value: false
+      },
       processing: {
         enumerable: false,
         writable: true,
@@ -123,6 +129,10 @@ class ShortBus extends EventEmitter {
     }
   }
 
+  get cancelled () {
+    return this._cancel
+  }
+
   onTimeout () {
     let log = []
     if (this.steps.length > 0){
@@ -180,6 +190,7 @@ class ShortBus extends EventEmitter {
     queue.on('stepcomplete', function (step) {
       me.emit('stepcomplete', step)
     })
+
     queue.on('steptimeout', function (step) {
       if (step.status === 'running') {
         me.emit('steptimeout', step)
@@ -333,12 +344,15 @@ class ShortBus extends EventEmitter {
       listener.on('stepcomplete', function () {
         if (queue.length > 0) {
           const currentStep = queue.shift()
+
           currentStep.on('stepcomplete', function () {
             listener.emit('stepcomplete')
           })
+
           currentStep.on('stepstarted', function () {
             me.emit('stepstarted', currentStep)
           })
+
           currentStep.run(this.mode)
         } else {
           me.emit('complete')
@@ -349,6 +363,7 @@ class ShortBus extends EventEmitter {
       currentStep.on('stepcomplete', function () {
         listener.emit('stepcomplete')
       })
+
       currentStep.on('stepstarted', function () {
         me.emit('stepstarted', currentStep)
       })
@@ -360,6 +375,39 @@ class ShortBus extends EventEmitter {
   // Alias for process
   run () {
     this.process.apply(this, arguments)
+  }
+
+  /**
+   * @method abort
+   * Abort/cancel processing. This prevents further steps from processing.
+   */
+  abort () {
+    // Make sure the steps are skipped.
+    this.each(function (step) {
+      step.skip()
+    })
+
+    this.steps = []
+    this.processing = false
+
+    this.emit('aborted')
+  }
+
+  /**
+   * @method each
+   * Apply a method to each step.
+   * @param {function} method
+   * @private
+   */
+  each (fn) {
+    for (let i = 0; i < this.steps.length; i++) {
+      fn(this.steps[i])
+    }
+  }
+
+  // Alias for abort
+  cancel () {
+    this.abort.apply(this, arguments)
   }
 }
 

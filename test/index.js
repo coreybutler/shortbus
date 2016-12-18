@@ -166,6 +166,42 @@ suite('Processing', function () {
     tasks.process()
 
   })
+
+  test('Abort Process', function (done) {
+    this.timeout(5000)
+
+    var total = 0
+
+    tasks.add(function (next) {
+      setTimeout(function () {
+        total++
+        next()
+      }, 1000)
+    })
+
+    tasks.add(function (next) {
+      setTimeout(function () {
+        total++
+        next()
+      }, 1000)
+    })
+
+    tasks.on('aborted', function () {
+      setTimeout(function () {
+        if (total !== 2) {
+          throw new Error('Running steps were cancelled.')
+        }
+
+        done()
+      }, 2200)
+    })
+
+    setTimeout(function () {
+      tasks.abort()
+    }, 300)
+
+    tasks.run()
+  })
 })
 
 suite('Sequential Processing', function () {
@@ -215,7 +251,45 @@ suite('Sequential Processing', function () {
       assert.ok(x[0] === 1 && x[1] === 2 && x[2] === 3, 'Invalid result.'+x.toString())
       done()
     })
+
     tasks.process(true)
+  })
+
+  test('Abort Process', function (done) {
+    this.timeout(5000)
+
+    var totalSync = 0
+
+    tasks.add(function (next) {
+      setTimeout(function () {
+        totalSync++
+        next()
+      }, 1000)
+    })
+
+    tasks.add(function (next) {
+      setTimeout(function () {
+        totalSync++
+        next()
+      }, 1000)
+    })
+
+    tasks.on('aborted', function () {
+      setTimeout(function () {
+        console.log(totalSync)
+        if (totalSync !== 1) {
+          throw new Error('Queued steps were not cancelled.')
+        }
+
+        done()
+      }, 1500)
+    })
+
+    setTimeout(function () {
+      tasks.abort()
+    }, 300)
+
+    tasks.run(true)
   })
 })
 

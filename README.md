@@ -284,6 +284,69 @@ tasks.on('steptimeout', function (step) {
 tasks.process()
 ```
 
+**Aborting**
+
+An entire series can be aborted during mid-process by calling the
+`abort()` method. It's important to understand that any complete or
+currently running steps will not be affected. Think of aborting
+a series of tasks/steps as a way to short circuit the series of events,
+similar to how pulling a domino out will stop them from _continuing_
+to fall over.
+
+Aborting an entire series of steps/tasks is simple:
+
+```js
+tasks.on('aborted', function () {
+  //...
+})
+
+tasks.abort()
+```
+
+Skipping an individual step is achieved by executing the `skip()`
+method.
+
+For example:
+
+```js
+tasks.on('stepskipped', function (step) {
+  //...
+})
+
+tasks.getAt(2).skip() // Indicates the 3rd step should be skipped.
+```
+
+By default, _a step cannot be skipped once it is started_, therefore
+this more commonly applies to steps run sequentially.
+
+_But I need to abort a step while it's running?!_
+
+Each task has a method called `abort()` that can be manually invoked in a step handler.
+
+For example:
+
+```js
+tasks.add(function (done) {
+  var me = this
+
+  setTimeout(function () {
+    if (someCondition) {
+      me.abort()
+    }
+
+    // Normal processing...
+
+  }, 2000)
+})
+
+// This triggers both a 'stepskipped' AND 'stepcomplete' event on tasks.
+```
+
+The use of this method may have very mixed results depending on your
+task/step structure, because it provides some access to the internal
+shortbus queue. Use with care.
+
+
 ### Events
 
 ShortBus fires several events that can be used for debugging, logging, or displaying legible progress of a process.
@@ -320,7 +383,9 @@ Each task event receives the queue item (step) object as a callback argument. Th
 - `stepcomplete`: Fired when a step is done.
 - `steptimeout`: Fired when a step takes too long.
 - `steptimeout`: Fired when a step takes too long.
+- `stepskipped`: Fired when a step is skipped.
 - `complete`: Fired when **all** steps are done.
 - `timeout`: Fired when the entire series of events takes too long.
+- `aborted`: Fired when the series of events is aborted.
 
 **NOTICE** `complete` and `timeout` are not "step" events and return no arguments in the callback.
