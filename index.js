@@ -412,7 +412,9 @@ class ShortBus extends EventEmitter {
 
     // Make sure the steps are skipped.
     this.each(function (step) {
-      step.skip()
+      if (['completed', 'running', 'timedout'].indexOf(step.status) < 0 && !step.skipped) {
+        step.skip()
+      }
     })
 
     this.once('complete', () => {
