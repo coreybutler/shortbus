@@ -100,6 +100,10 @@ class ShortBus extends EventEmitter {
         me.emit('complete')
       }
     })
+
+    this.on('aborting', () => {
+      this._cancel = true
+    })
   }
 
   get list () {
@@ -307,8 +311,24 @@ class ShortBus extends EventEmitter {
   }
 
   /**
+   * @method reset
+   * Resets all cancelled/skipped steps, essentially resetting the queue
+   * to it's pre-aborted state.
+   */
+  reset () {
+    if (this.processing) {
+      return console.log('Cannot reset a running queue. Abort or wait for the process to complete before resetting.')
+    }
+
+    // Refresh cancelled steps
+    this.steps.forEach((step) => {
+      step._skip = false
+    })
+  }
+
+  /**
    * @method process
-   * Run the queued process in order
+   * Run the queued processes in order.
    * @param {boolean} [sequential=false]
    * Set to `true` to run the queue items in a synchronous-like manner.
    * This will execute each method one after the other. Each method must
@@ -325,6 +345,7 @@ class ShortBus extends EventEmitter {
 
     const me = this
     this.processing = true
+    this._cancel = false
 
     if (this.timeout !== null) {
       this.timer = setTimeout(function () {
@@ -364,14 +385,6 @@ class ShortBus extends EventEmitter {
       })
 
       let currentStep = queue.shift()
-
-      while (queue.length > 0 && currentStep.skipped) {
-        currentStep = queue.shift()
-      }
-
-      if (queue.length === 0) {
-        return this.emit('complete')
-      }
 
       currentStep.on('stepcomplete', function () {
         listener.emit('stepcomplete')

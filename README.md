@@ -316,28 +316,7 @@ tasks.on('stepskipped', function (step) {
 tasks.getAt(2).skip() // Indicates the 3rd step should be skipped.
 ```
 
-By default, _a step cannot be skipped once it is started_, therefore
-this more commonly applies to steps run sequentially.
-
-_But I need to abort a step while it's running?!_
-
-Each task has a method called `abort()` that can be manually invoked in a step handler.
-
-For example:
-
-```js
-tasks.add(function (done) {
-  var me = this
-
-  setTimeout(function () {
-    if (someCondition) {
-      me.abort()
-    }
-
-    // Normal processing...
-
-  }, 2000)
-})
+By default, _a step cannot be skipped once it has started executing_.
 
 // This triggers both a 'stepskipped' AND 'stepcomplete' event on tasks.
 ```
