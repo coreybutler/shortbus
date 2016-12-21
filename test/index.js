@@ -15,12 +15,15 @@ suite('Queue',function () {
     tasks.add(function () {
       console.log('Task 1')
     })
+
     tasks.add('t2',function () {
       console.log('Task 2')
     })
+
     tasks.add(function () {
       console.log('Task 3')
     })
+
     assert.ok(tasks.list.length === 3, 'Invalid number of steps queued. Expected: 3, Actual: '+tasks.list.length)
     assert.ok(tasks.list[0].name === 'Step 1', 'Autoname failed. Expected: Step 1, Actual: '+tasks.list[1].name)
     assert.ok(tasks.list[1].name === 't2', 'Invalid step name. Expected: t2, Actual: '+tasks.list[1].name)
@@ -30,12 +33,15 @@ suite('Queue',function () {
     tasks.add(function () {
       console.log('Task 1')
     })
+
     tasks.add('t2',function () {
       console.log('Task 2')
     })
+
     tasks.add('t3',function () {
       console.log('Task 3')
     })
+
     var x = tasks.removeAt(1)
     assert.ok(x.number === 2, 'Unrecognized task removed. Expected ID #2, Actual ID: '+x.number)
     assert.ok(tasks.list.length === 2, 'Invalid number of steps queued. Expected: 2, Actual: '+tasks.list.length)
@@ -53,17 +59,22 @@ suite('Queue',function () {
     tasks.add(function () {
       console.log('Task 1')
     })
+
     tasks.add('t2',function () {
       console.log('Task 2')
     })
+
     tasks.add('t3',function () {
       console.log('Task 3')
     })
+
     var t = tasks.getAt(1)
     assert.ok(t.number === 2,'tasks.getAt method returned unexpected value. Expected ID: 2, Received: '+t.number)
     t = tasks.get('t3')
+
     assert.ok(t.number === 3,'tasks.get (by name) method returned unexpected value. Expected ID: 3, Received: '+t.number)
     t = tasks.get(2)
+
     assert.ok(t.number === 2,'tasks.get (by ID) method returned unexpected value. Expected ID: 2, Received: '+t.number)
   })
 
@@ -82,9 +93,11 @@ suite('Processing', function () {
     tasks.add(function () {
       x.push('Task 1')
     })
+
     tasks.add('t2',function () {
       x.push('Task 2')
     })
+
     tasks.add('t3',function () {
       x.push('Task 3')
     })
@@ -93,21 +106,25 @@ suite('Processing', function () {
       assert.ok(x.length === 3, 'Invalid result.'+x.toString())
       done()
     })
+
     tasks.process()
   })
 
   test('Async execution.', function(done){
     this.timeout(4000)
     var x = []
+
     tasks.add(function () {
       x.push('Task 1')
     })
+
     tasks.add('t2a',function(next){
       setTimeout(function () {
         x.push('Task 2')
         next()
       },700)
     })
+
     tasks.add('t3',function () {
       x.push('Task 3')
     })
@@ -116,6 +133,7 @@ suite('Processing', function () {
       assert.ok(x.length === 3, 'Invalid result.'+x.toString())
       done()
     })
+
     tasks.process()
   })
 
@@ -128,6 +146,7 @@ suite('Processing', function () {
     tasks.add(function () {
       x.push('Task 1')
     })
+
     tasks.add('t2',function(next){
       setTimeout(function () {
         x.push('Task 2')
@@ -148,9 +167,11 @@ suite('Processing', function () {
     this.timeout(3000)
 
     var x = []
+
     tasks.add(function () {
       x.push('Task 1')
     })
+
     tasks.add('t2',function(next){
       this.timeout(500)
       setTimeout(function () {
@@ -172,23 +193,18 @@ suite('Processing', function () {
 
     var total = 0
 
-    tasks.add(function (next) {
-      setTimeout(function () {
-        total++
-        next()
-      }, 1000)
-    })
-
-    tasks.add(function (next) {
-      setTimeout(function () {
-        total++
-        next()
-      }, 1000)
-    })
+    for (let x = 0; x < 50; x++) {
+      tasks.add(function (next) {
+        setTimeout(function () {
+          total++
+          next()
+        }, 1000)
+      })
+    }
 
     tasks.on('aborted', function () {
       setTimeout(function () {
-        if (total !== 2) {
+        if (total !== 50) {
           throw new Error('Running steps were cancelled.')
         }
 
@@ -217,9 +233,11 @@ suite('Sequential Processing', function () {
     tasks.add(function () {
       x.push(1)
     })
+
     tasks.add('t2',function () {
       x.push(2)
     })
+
     tasks.add('t3',function () {
       x.push(3)
     })
@@ -228,6 +246,7 @@ suite('Sequential Processing', function () {
       assert.ok(x[0] === 1 && x[1] === 2 && x[2] === 3, 'Invalid result.'+x.toString())
       done()
     })
+
     tasks.process(true)
   })
 
@@ -237,12 +256,14 @@ suite('Sequential Processing', function () {
     tasks.add(function () {
       x.push(1)
     })
+
     tasks.add('t2',function (next) {
       setTimeout(function () {
         x.push(2)
         next()
       }, 600)
     })
+
     tasks.add('t3',function () {
       x.push(3)
     })
@@ -260,23 +281,17 @@ suite('Sequential Processing', function () {
 
     var totalSync = 0
 
-    tasks.add(function (next) {
-      setTimeout(function () {
-        totalSync++
-        next()
-      }, 1000)
-    })
-
-    tasks.add(function (next) {
-      setTimeout(function () {
-        totalSync++
-        next()
-      }, 1000)
-    })
+    for (var x = 0; x < 50; x++) {
+      tasks.add(function (next) {
+        setTimeout(function () {
+          totalSync++
+          next()
+        }, 1000)
+      })
+    }
 
     tasks.on('aborted', function () {
       setTimeout(function () {
-        console.log(totalSync)
         if (totalSync !== 1) {
           throw new Error('Queued steps were not cancelled.')
         }

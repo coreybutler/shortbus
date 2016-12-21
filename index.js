@@ -180,13 +180,15 @@ class ShortBus extends EventEmitter {
       throw new Error('No processing method defined for step ' + (parseInt(this.steps.length) + 1) + '.')
     }
 
+    const me = this
     const queue = new QueueItem({
+      runner: me,
       name: name,
       callback: fn,
       number: (this.steps.length > 0 ? this.steps[this.steps.length-1].number : 0) + 1
     })
 
-    const me = this
+
     queue.on('stepcomplete', function (step) {
       me.emit('stepcomplete', step)
     })
@@ -360,6 +362,19 @@ class ShortBus extends EventEmitter {
       })
 
       let currentStep = queue.shift()
+
+      while (currentStep.skipped && queue.length > 0) {
+        currentStep = queue.shift()
+
+        if (currentStep.skipped) {
+          this.emit('stepskipped', currentStep)
+        }
+      }
+
+      if (queue.length === 0) {
+        this.emit('complete')
+      }
+
       currentStep.on('stepcomplete', function () {
         listener.emit('stepcomplete')
       })
@@ -387,10 +402,9 @@ class ShortBus extends EventEmitter {
       step.skip()
     })
 
-    this.steps = []
-    this.processing = false
-
-    this.emit('aborted')
+    this.on('complete', () => {
+      this.emit('aborted')
+    })
   }
 
   /**
