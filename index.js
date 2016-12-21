@@ -182,7 +182,6 @@ class ShortBus extends EventEmitter {
 
     const me = this
     const queue = new QueueItem({
-      runner: me,
       name: name,
       callback: fn,
       number: (this.steps.length > 0 ? this.steps[this.steps.length-1].number : 0) + 1
@@ -324,10 +323,10 @@ class ShortBus extends EventEmitter {
       return this.emit('complete')
     }
 
+    const me = this
     this.processing = true
 
     if (this.timeout !== null) {
-      const me = this
       this.timer = setTimeout(function () {
         me.onTimeout()
       }, this.timeout)
@@ -341,21 +340,24 @@ class ShortBus extends EventEmitter {
     } else {
       let queue = this.steps
       let listener = new EventEmitter()
-      const me = this
 
       listener.on('stepcomplete', function () {
         if (queue.length > 0) {
-          const currentStep = queue.shift()
+          const currentTask = queue.shift()
 
-          currentStep.on('stepcomplete', function () {
+          if (currentTask.skipped) {
+            return listener.emit('stepcomplete')
+          }
+
+          currentTask.on('stepcomplete', function () {
             listener.emit('stepcomplete')
           })
 
-          currentStep.on('stepstarted', function () {
-            me.emit('stepstarted', currentStep)
+          currentTask.on('stepstarted', function () {
+            me.emit('stepstarted', currentTask)
           })
 
-          currentStep.run(this.mode)
+          currentTask.run(this.mode)
         } else {
           me.emit('complete')
         }
@@ -363,16 +365,12 @@ class ShortBus extends EventEmitter {
 
       let currentStep = queue.shift()
 
-      while (currentStep.skipped && queue.length > 0) {
+      while (queue.length > 0 && currentStep.skipped) {
         currentStep = queue.shift()
-
-        if (currentStep.skipped) {
-          this.emit('stepskipped', currentStep)
-        }
       }
 
       if (queue.length === 0) {
-        this.emit('complete')
+        return this.emit('complete')
       }
 
       currentStep.on('stepcomplete', function () {
@@ -397,12 +395,14 @@ class ShortBus extends EventEmitter {
    * Abort/cancel processing. This prevents further steps from processing.
    */
   abort () {
+    this.emit('aborting')
+
     // Make sure the steps are skipped.
     this.each(function (step) {
       step.skip()
     })
 
-    this.on('complete', () => {
+    this.once('complete', () => {
       this.emit('aborted')
     })
   }

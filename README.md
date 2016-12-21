@@ -386,6 +386,7 @@ Each task event receives the queue item (step) object as a callback argument. Th
 - `stepskipped`: Fired when a step is skipped.
 - `complete`: Fired when **all** steps are done.
 - `timeout`: Fired when the entire series of events takes too long.
-- `aborted`: Fired when the series of events is aborted.
+- `aborting`: Fired when the an abort is initiated.
+- `aborted`: Fired when the series of events is aborted/cancelled.
 
 **NOTICE** `complete` and `timeout` are not "step" events and return no arguments in the callback.
