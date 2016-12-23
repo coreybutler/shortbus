@@ -2,7 +2,7 @@
 
 # Shortbus
 
-Shortbus is a lightweight flow control module that works like a mini event bus + serial/parallel processor.
+Shortbus is a lightweight flow control module that works like a mini event bus + serial/parallel processor. It makes for a great task runner.
 
 Install via `npm install shortbus`.
 
