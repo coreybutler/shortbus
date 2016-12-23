@@ -107,7 +107,7 @@ This example illustrates the three primary syntaxes for adding a task. The first
 
 The second `task.add()` only supplies the required function. The function is assumed to be synchronous.
 
-The final `task.add()` only supplied the required function. However, it also uses the `next` attribute. The `setTimeout` function is a contrived example of an async function that may take some more time to execute. By
+The final `task.add()` only supplied the required function. However, it also uses the `next` argument. The `setTimeout` function is a contrived example of an async function that may take some more time to execute. By
 using the `next` argument, the method will not be considered "finished" until `next()` is called.
 
 **Displaying tasks:**
@@ -129,7 +129,7 @@ console.log(tasks.list)
 
 **Removing a task** is also a straightforward process. Keep in mind that a tasks can only be removed before the `tasks.process()` method begins processing, or after they complete. You cannot add or remove tasks during processing.
 
-There are two ways to remove a task. A task can be removed directory from the task `list` (an array) by index, using the `removeAt()` method:
+There are two ways to remove a task. A task can be removed directly from the task `list` (an array) by index, using the `removeAt()` method:
 
 ```js
 var Shortbus = require('shortbus')
@@ -181,9 +181,9 @@ Tasks are just an object held in an array. An example might look like:
 }
 ```
 
-The `id` an `status` are read-only. The name and method can both be modified. To change a task's function after it has already been created, use the `get` method to retrieve this object:
+The `id` and `status` are read-only. The name and method can both be modified. To change a task's function after it has already been created, use the `get` method to retrieve this object:
 
-```
+```js
 var task = tasks.get('My Task') // get(name or ID)
 task.name = 'New Name'
 
@@ -237,11 +237,11 @@ After approximately 2 seconds, the code above writes the following to the consol
 ```
 
 Since tasks are executed sequentially, the second task (asynchronous)
-waits 2 seconds before adding `2` to the array. If sequential processing _was NOT used_, the output would have been `1, 3, 2`.
+waits 2 seconds before adding `2` to `myArray`. If sequential processing _was NOT used_, the output would have been `1, 3, 2`.
 
 #### Timeouts
 
-Shortbus has a process timeout feature that is _disabled_ by default. This feature will monitor the _entire_ process and fire a `timeout` event if the timeout maximum is exceeded. To enable this feature, set the timeout attribute before processing tasks. For example:
+Shortbus has a process timeout feature that is _disabled_ by default. This feature will monitor the _entire_ process and fire a `timeout` event if the timeout maximum duration is exceeded. To enable this feature, set the timeout attribute before processing tasks. For example:
 
 ```js
 var Shortbus = require('shortbus')
@@ -296,8 +296,12 @@ to fall over.
 Aborting an entire series of steps/tasks is simple:
 
 ```js
+tasks.on('aborting', function () {
+  // Triggered when the abort process starts.
+})
+
 tasks.on('aborted', function () {
-  //...
+  // Triggered when all tasks are flushed and the abort is complete.
 })
 
 tasks.abort()
@@ -318,13 +322,7 @@ tasks.getAt(2).skip() // Indicates the 3rd step should be skipped.
 
 By default, _a step cannot be skipped once it has started executing_.
 
-// This triggers both a 'stepskipped' AND 'stepcomplete' event on tasks.
-```
-
-The use of this method may have very mixed results depending on your
-task/step structure, because it provides some access to the internal
-shortbus queue. Use with care.
-
+This triggers both 'stepskipped' AND 'stepcomplete' events for a task/step.
 
 ### Events
 
@@ -344,7 +342,7 @@ tasks.on('steptimeout', function (step) {
 })
 ```
 
-Each task event receives the queue item (step) object as a callback argument. The step object looks like:
+Each task event receives the queue item (step/task) object as a callback argument. The step object looks like:
 
 ```js
 {
@@ -361,11 +359,10 @@ Each task event receives the queue item (step) object as a callback argument. Th
 - `stepstarted`: Fired when a step begins processing.
 - `stepcomplete`: Fired when a step is done.
 - `steptimeout`: Fired when a step takes too long.
-- `steptimeout`: Fired when a step takes too long.
 - `stepskipped`: Fired when a step is skipped.
 - `complete`: Fired when **all** steps are done.
 - `timeout`: Fired when the entire series of events takes too long.
 - `aborting`: Fired when the an abort is initiated.
 - `aborted`: Fired when the series of events is aborted/cancelled.
 
-**NOTICE** `complete` and `timeout` are not "step" events and return no arguments in the callback.
+**NOTICE** `complete`, `timeout`, `aborting`, and `aborted` are not "step" events and return no arguments in the callback.
