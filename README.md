@@ -14,11 +14,11 @@ _Use Case:_
 
 Downloading is an asynchronous process, but merging and saving to disk is not. The process must wait for all of the files to download before it can concatenate them into a single resulting file.
 
-Shortbus was designed to support this type of use case in a human readable way. Behind the scenes, Shortbus queues tasks and event listeners, and triggers events as each step is completed. It also allows for dynamic sequencing (add/remove tasks, aborting, timeouts), which are commonly more difficult to accomplish with callbacks or promises.
+Shortbus was designed to support this type of use case in a human readable way. Behind the scenes, Shortbus queues tasks and event listeners, and triggers events as each step is completed. 
 
 _Why?_
 
-This approach produces more readable, cleaner, and well structured data flow code. It also provides a means to avoid an overly complicated callback structure.
+This approach produces more readable, cleaner, and well structured flow code. It provides an approach to avoid overly complicated callback structures. It also allows for dynamic sequencing (add/remove tasks, aborting, timeouts), which are commonly more difficult to accomplish using callbacks or promises.
 
 ### Example Please?
 
