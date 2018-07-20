@@ -32,6 +32,6 @@
   },
   "homepage": "https://github.com/coreybutler/shortbus",
   "devDependencies": {
-    "mocha": "^2.1.0"
+    "mocha": "^5.2.0"
   }
 }
