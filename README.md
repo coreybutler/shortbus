@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/coreybutler/shortbus.svg)](https://travis-ci.org/coreybutler/shortbus) [![Greenkeeper badge](https://badges.greenkeeper.io/coreybutler/shortbus.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/coreybutler/shortbus.svg)](https://travis-ci.org/coreybutler/shortbus)
 
 # Shortbus
 
