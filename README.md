@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/coreybutler/shortbus.svg)](https://travis-ci.org/coreybutler/shortbus)
 
+**NOTICE:** This library works well, but I'm no longer supporting it. Instead, I've incorporated this library into [Queue](https://github.com/ngnjs/queue), a plugin for the ultralight [NGN](https://github.com/ngnjs/ngn) library (which I also wrote). The new version, built on ES Modules, works in Node.js, Deno, browsers, and any other ECMAScript compliant JavaScript runtime.
+
 # Shortbus
 
 Shortbus is a lightweight flow control module that works like a mini event bus + serial/parallel processor. It makes for a great task runner.
